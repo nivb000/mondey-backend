@@ -5,16 +5,14 @@ module.exports = {
     getById,
     getByEmail,
     findUsersByEmail,
-    updateMentions,
     add,
     update,
     // remove,
 }
-
-async function query(boardId) {
+async function query(members) {
     try {
         let users
-        if (boardId) users = await pool.query(`SELECT * FROM users WHERE boardmentions::jsonb @> '["${boardId}"]'::jsonb;`)
+        if (members) users = await pool.query(`SELECT * FROM users WHERE id = ANY($1)`, [members])
         else users = await pool.query('SELECT * FROM users')
         return users.rows
     } catch (err) {
@@ -38,7 +36,6 @@ async function getByEmail(email) {
         const user = await pool.query(`SELECT * FROM users WHERE email = $1`, [email])
         return user.rows[0]
     } catch (err) {
-        console.log('err', err)
         throw err
     }
 }
@@ -48,19 +45,7 @@ async function findUsersByEmail(email) {
         const users = await pool.query(`SELECT * FROM users WHERE email LIKE $1 || '%'`, [email])
         return users.rows
     } catch (err) {
-        console.log('err', err)
         throw err
-    }
-}
-
-async function updateMentions(userId, boardId) {
-    try {
-        const result = await pool.query("SELECT boardmentions FROM users WHERE id = $1", [userId])
-        const boardMentions = result.rows[0].boardmentions || []
-        const updatedMentions = JSON.stringify([...boardMentions, boardId.toString()])
-        await pool.query("UPDATE users SET boardMentions = $1 WHERE id = $2", [updatedMentions, userId])
-    } catch (error) {
-        throw error
     }
 }
 
@@ -71,11 +56,10 @@ async function add(user) {
             user.email,
             user.password,
             user.imgUrl,
-            user.boardmentions
         ]
         const addedUser = await pool.query(
-            `INSERT INTO users(fullname, email, password, "imgUrl", boardmentions) 
-            VALUES ($1, $2, $3, $4, $5) RETURNING *`, userToAdd)
+            `INSERT INTO users(fullname, email, password, "imgUrl") 
+            VALUES ($1, $2, $3, $4) RETURNING *`, userToAdd)
         return addedUser.rows[0]
     } catch (err) {
         throw err
@@ -86,13 +70,11 @@ async function update(user, id) {
         user.fullname,
         user.email,
         user.password,
-        user.imgUrl,
-        JSON.stringify(user.boardmentions)
+        user.imgUrl
     ]
     try {
-        await pool.query(`UPDATE users SET fullname = $1, email = $2, password = $3, "imgUrl" = $4, boardmentions = $5 WHERE id = ${id}`, values)
+        await pool.query(`UPDATE users SET fullname = $1, email = $2, password = $3, "imgUrl" = $4 WHERE id = ${id}`, values)
     } catch (error) {
-        console.log('error', error);
         throw error
     }
 }

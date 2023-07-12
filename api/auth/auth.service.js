@@ -29,9 +29,9 @@ async function login(email, password, isGoogleUser) {
     }
 }
 
-async function signup(email, password, fullname, imgUrl, boardmentions) {
+async function signup(email, password, fullname, imgUrl) {
     if (!email || !password || !fullname) return Promise.reject('fullname, email and password are required!')
-    return userService.add({ email, password, fullname, imgUrl,  boardmentions})
+    return userService.add({ email, password, fullname, imgUrl})
 }
 
 function getLoginToken(user) {

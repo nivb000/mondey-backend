@@ -9,11 +9,11 @@ module.exports = {
     update
 }
 
-async function query(mentions) {
+async function query(userId) {
     try {
         let boards
-        if(!mentions) return boards = []
-        boards = await pool.query(`SELECT * FROM board where id in(${mentions.toString()})`)
+        if(!userId) return boards = []
+        boards = await pool.query(`SELECT * FROM board WHERE members @> '"${userId}"'::jsonb;`)
         return boards.rows
     } catch (error) {
         throw error
@@ -44,21 +44,18 @@ async function add(board) {
         board.createdBy.id,
         board.createdBy.fullname,
         board.createdBy.imgUrl,
-        board.style,
         JSON.stringify(board.labels),
         JSON.stringify(board.groups),
         JSON.stringify(board.activities),
-        JSON.stringify(board.cmpsOrder)
+        JSON.stringify(board.cmpsOrder),
+        JSON.stringify(board.members)
     ]
     try {
         const newBoard = await pool.query(
-            `INSERT INTO board(title, archivedat, createdat, "createdby.id", "createdby.fullname", "createdby.imgurl", style, labels, groups, activities, cmpsorder) 
+            `INSERT INTO board(title, archivedat, createdat, "createdby.id", "createdby.fullname", "createdby.imgurl", labels, groups, activities, cmpsorder, members) 
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`, values)
-
-        await userService.updateMentions(board.createdBy.id, newBoard.rows[0].id)
-        return newBoard.rows
+        return newBoard.rows[0]
     } catch (error) {
-        console.log(error)
         throw error
     }
 }
@@ -71,14 +68,14 @@ async function update(board, id) {
         board['createdby.id'],
         board['createdby.fullname'],
         board['createdby.imgurl'],
-        board.style,
         JSON.stringify(board.labels),
         JSON.stringify(board.groups),
         JSON.stringify(board.activities),
-        JSON.stringify(board.cmpsorder)
+        JSON.stringify(board.cmpsorder),
+        JSON.stringify(board.members)
     ]
     try {
-        await pool.query(`UPDATE board SET title = $1, archivedat = $2, createdat = $3, "createdby.id" = $4, "createdby.fullname" = $5, "createdby.imgurl" = $6, style = $7, labels = $8, groups = $9, activities = $10, cmpsorder = $11 WHERE id = ${id}`, values)
+        await pool.query(`UPDATE board SET title = $1, archivedat = $2, createdat = $3, "createdby.id" = $4, "createdby.fullname" = $5, "createdby.imgurl" = $6, labels = $7, groups = $8, activities = $9, cmpsorder = $10, members = $11 WHERE id = ${id}`, values)
         const updatedBoard = await pool.query('SELECT * FROM board WHERE id = $1', [id])
         return updatedBoard.rows[0]
     } catch (error) {

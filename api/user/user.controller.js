@@ -11,8 +11,8 @@ module.exports = {
 
 async function getUsers(req, res) {
     try {
-        const { boardId } = req.query
-        const users = await userService.query(boardId)
+        const { members } = req.query
+        const users = await userService.query(members)
         res.send(users)
     } catch (err) {
         res.status(500).send({ err: 'Failed to get users' })

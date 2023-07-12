@@ -21,11 +21,10 @@ async function login(req, res) {
 async function signup(req, res) {
     try {
         const { email, password, fullname, imgUrl, isGoogleUser } = req.body
-        const boardmentions = []
         if(isGoogleUser) {
             const isExists = await authService.checkIfUserExists(email)
             if(!isExists){
-                await authService.signup(email, password, fullname, imgUrl, boardmentions)
+                await authService.signup(email, password, fullname, imgUrl)
             }
         }
         else {

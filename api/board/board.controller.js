@@ -10,8 +10,8 @@ module.exports = {
 
 async function getBoards(req, res) {
     try {
-        const user = req.query
-        const boards = await boardService.query(user.boardmentions)
+        const { userId } = req.query
+        const boards = await boardService.query(userId)
         res.json(boards)
     } catch (error) {
         res.status(500).send({ error: 'Failed to get all boards' })
