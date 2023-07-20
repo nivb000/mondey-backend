@@ -22,15 +22,14 @@ if (process.env.NODE_ENV === 'production') {
 const boardRoutes = require('./api/board/board.routes')
 const authRoutes = require('./api/auth/auth.routes')
 const userRoutes = require('./api/user/user.routes')
-// const { setupSocketAPI } = require('./api/socket.service')
-//SOCKET TURNED OFF FOR NOW...
+const { setupSocketAPI } = require('./api/socket.service')
 
 const setupAsyncLocalStorage = require('./middlewares/setupAls.middleware')
 app.all('*', setupAsyncLocalStorage)
 app.use('/api/board/', boardRoutes)
 app.use('/api/auth/', authRoutes)
 app.use('/api/user/', userRoutes)
-// setupSocketAPI(http)
+setupSocketAPI(http)
 
 
 app.get('/**', (req, res) => {

@@ -28,7 +28,7 @@ async function signup(req, res) {
             }
         }
         else {
-            await authService.signup(email, password, fullname, imgUrl, boardmentions)
+            await authService.signup(email, password, fullname, imgUrl)
         }
         const user = await authService.login(email, password, isGoogleUser)
         const loginToken = authService.getLoginToken(user)
@@ -42,6 +42,7 @@ async function signup(req, res) {
 
 async function logout(req, res) {
     try {
+        console.log('*******************************************************************************logging out')
         res.clearCookie('loginToken')
         res.send({ msg: 'Logged out successfully' })
     } catch (err) {

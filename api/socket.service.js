@@ -10,9 +10,9 @@ function setupSocketAPI(http) {
         socket.on('disconnect', socket => {
             console.log(`Socket disconnected [id: ${socket.id}]`)
         })
-        socket.on('order-updated', order => {
-            console.log(`Order updated from socket [id: ${socket.id}], emitting to topic ${socket.myTopic}`)
-            emitToUser({type: 'order-status-updated', data: order ,userId: order.buyer._id})
+        socket.on('update-board', board => {
+            console.log(`Board updated from socket [id: ${socket.id}], emitting to topic ${socket.myTopic}`)
+            broadcast({ type: 'board-updated', data: board })
         })
         socket.on('set-user-socket', userId => {
             console.log(`Setting socket.userId = ${userId} for socket [id: ${socket.id}]`)
