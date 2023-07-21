@@ -6,17 +6,21 @@ function setupSocketAPI(http) {
             origin: '*',
         }
     })
-    gIo.on('connect', socket => {
+    gIo.on('connect', (socket) => {
         socket.on('disconnect', socket => {
             console.log(`Socket disconnected [id: ${socket.id}]`)
         })
         socket.on('update-board', board => {
-            console.log(`Board updated from socket [id: ${socket.id}], emitting to topic ${socket.myTopic}`)
-            broadcast({ type: 'board-updated', data: board })
+            console.log(`Board updated from socket [id: ${socket.id}]`)
+            emitTo({ type: 'board-updated', data: board, room: board.id })
         })
-        socket.on('set-user-socket', userId => {
+        socket.on('set-user-socket', (userId) => {
             console.log(`Setting socket.userId = ${userId} for socket [id: ${socket.id}]`)
             socket.userId = userId
+        })
+        socket.on('set-socket-room', boardId => {
+            console.log('setting socket room', boardId)
+            socket.join(`${boardId}`)
         })
         socket.on('unset-user-socket', () => {
             console.log(`Removing socket.userId for socket [id: ${socket.id}]`)
@@ -26,8 +30,8 @@ function setupSocketAPI(http) {
     })
 }
 
-function emitTo({ type, data, label }) {
-    if (label) gIo.to('watching:' + label.toString()).emit(type, data)
+function emitTo({ type, data, room }) {
+    if (room) gIo.to(room.toString()).emit(type, data)
     else gIo.emit(type, data)
 }
 
